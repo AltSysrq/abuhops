@@ -19,8 +19,10 @@ AC_SEARCH_LIBS(__gmpz_powm, [gmp mpir], [],
 [AC_MSG_ERROR([unable to locate a GMP or MPIR library])])
 
 # Checks for header files.
+AC_LANG_PUSH([C++])
 AC_CHECK_HEADER([asio.hpp], [], [AC_MSG_ERROR([could not find asio.hpp])])
 AC_CHECK_HEADER([gmp.h], [], [AC_MSG_ERROR([could not find gmp.h])])
+AC_LANG_POP([C++])
 
 # Checks for typedefs, structures, and compiler characteristics.
 
