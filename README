@@ -1,0 +1,208 @@
+Abendstern UDP Hole-Punching Server (AbUHoPS)
+=============================================
+
+Introduction
+------------
+Abuhops provides generic UDP hole-punching and peer discovery to clients
+authenticated by an external service.
+
+More specifically, Abuhops provides four things to clients:
+
+- Basic UDP Hole-Punching. By maintaining occasional communication with the
+  server, clients can know that their NAT-external port numbers will generally
+  remain consistent.
+- Triangular routing. Firewalls and NAT may make it impossible for a peer to
+  receive data from another until it first sending something to it. Sending
+  initial connection packets by proxy allows both peers to act like they are
+  initiating the connection (from the perspective of a firewall or NAT).
+- Advertising to other peers. Each client may post an ``advertisement''
+  which is sent to other peers on request, allowing them to discover each
+  other.
+- Proof of authenticity. The server can provide signatures which allow other
+  peers to verify that a peer is authenticated and is who it says it is.
+
+Conventions
+-----------
+Unless otherwise specified, all integers are unsigned, and are transmitted
+little-endian. An IPv4 address is represented as four unsigned bytes; an IPv6
+address is represented as eight unsigned 16-bit integers. In the protocol, an
+``address'' refers to an IP address of the same version as the current
+communication. An NTBS is a string of non-zero bytes terminated by a single
+zero byte; the string contained is application-specific, so its encoding does
+not matter to abuhops.
+
+Whenever ElGamal signatures are used, the base is 2 and the modulus is
+444291e51b3ea5fd16673e95674b01e7b (base-16).
+
+An HMAC refers specifically to a SHA-256 HMAC.
+
+Signatures
+----------
+Abuhops uses weak digital signatures divided into ``signature domains'' to
+allow clients to authenticate each other. (Abuhops is designed with the
+assumption that what this authentication is protecting is neither long-term nor
+sensitive --- ie, Internet games of Abendstern.)
+
+Each signature domain is associated with a ElGamal public/private key
+pair, where the original random number (``x'') is the private key, and
+(g**x mod p) is the public key. A public_key datum is 17 bytes long, and
+encodes the bytes in little-endian order. (17 since the prime modulus is 33
+hexits long.)
+
+Each client is associated with zero or one signature domain. When associated
+with a domain, the client is given a signature which is computed using the
+ElGamal signature scheme using the aformentioned parameters, a message equal to
+the bytewise concatenation of:
+- client identifier, little-endian 32-bit integer
+- client name (without trailing NUL)
+and a hash algorithm of SHA-256. The resulting signature is stored as two
+17-byte integers, little-endian, r followed by s.
+
+When a client wishes to join a signature domain, it must either join an
+existing one or create a new one. When creating, the server chooses a random
+number to address that domain. When no more clients exist for a domain, it is
+forgotten. 
+
+Protocol Overview
+-----------------
+The client-server protocol is relatively simple and mostly stateless. In
+particular, neither side is required to send certain packets in response to the
+other's (though the server needs to in order to be useful); lost or duplicated
+individual packets will not break the protocol.
+
+Every packet in either direction begins with a single byte indicating that
+packet's meaning. The rest of the packet's format is determined by the type.
+
+The protocol typically uses UDP port 12545.
+
+Client-Server Protocol
+----------------------
+0x00 --- CONNECT
+^^^^^^^^^^^^^^^^
+Format:
+  0x00
+  int32         client identifier
+  int32         timestamp
+  ntbs          client name
+  hmac          authentication
+
+The CONNECT packet requests that the server track the sender. The HMAC is
+determined using a shared secret with the authentication service, using as
+input a binary string consisting of the following:
+  - client identifier, little endian
+  - timestamp, little endian
+  - client name, without trailing NUL
+
+All fields (except possibly the client name) are typically provided by the
+authentication service (including the timestamp).
+
+If the HMAC is valid, the server may begin tracking the client. If it is
+invalid, the server must take no action.
+
+0x01 --- PING
+^^^^^^^^^^^^^
+Format:
+  0x01
+
+The PING packet is sent by the client at random intervals between 15 and 30
+seconds when there is nothing else to send, to keep a UDP hole punched through
+the firewall/NAT.
+
+0x02 --- PROXY
+^^^^^^^^^^^^^^
+Format:
+  0x02
+  address       destination address
+  port          destination port
+  ...           payload
+
+The PROXY packet requests that the server send the UDP packet in payload to the
+given address/port combination. The server should not honour this request if
+the address/port is not currently connected.
+
+0x03 --- POST
+^^^^^^^^^^^^^
+Format:
+  0x03
+  ...           payload
+
+Requests that the server send payload as an advertisement of the
+client. payload may not exceed 128 bytes in length.
+
+0x04 --- LIST
+^^^^^^^^^^^^^
+Format:
+  0x04
+
+Requests that the server begin sending ADVERT packets listing other peers on
+the network.
+
+0x05 --- SIGN
+^^^^^^^^^^^^^
+Format:
+  0x05
+  int32         signature domain
+
+Requests that the server produce a signature for this client within the given
+domain. A domain of 0 indicates that a new domain should be created.
+
+0xFF --- BYE
+^^^^^^^^^^^^
+Format:
+  0x05
+
+Indicates that the client will be sending no more packets, so the server may
+immediately free all information on that client.
+
+Server-Client Protocol
+^^^^^^^^^^^^^^^^^^^^^^
+0x00 --- YOU-ARE
+^^^^^^^^^^^^^^^^
+Format:
+  0x00
+  address       client address
+  port          client port
+
+Informs the client about its address and port as seen from the Internet.
+
+0x01 --- PONG
+^^^^^^^^^^^^^
+Format:
+  0x01
+
+Sent periodically when there is nothing else to send, to ensure that firewalls
+and NATs see two-way activity.
+
+0x02 --- FROM-OTHER
+^^^^^^^^^^^^^^^^^^^
+Format:
+  0x02
+  ...           payload
+
+Delivers a packet send by another client via PROXY; payload is the exact
+payload from the corresponding PROXY packet. If address information is needed,
+the application must include it in the payload.
+
+0x03 --- ADVERT
+^^^^^^^^^^^^^^^
+Format:
+  0x03
+  int32         client number
+  address       client address
+  int16         client port
+  ...           payload
+
+Informs the client of another client which has posted an advertisement for
+itself.
+
+0x05 --- SIGNATURE
+^^^^^^^^^^^^^^^^^^
+Format:
+  0x05
+  int32         signature domain
+  signature     signature
+  public_key    public_key
+
+Notifies the client that it has been associted with the given signature domain,
+and provides it with that domain's public key and the client's unique signature
+within that domain.
