@@ -1,0 +1,2 @@
+bin_PROGRAMS=abuhopsd
+abuhopsd_SOURCES=abuhops.cxx
