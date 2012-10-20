@@ -61,7 +61,7 @@ and a hash algorithm of SHA-256. The resulting signature is stored as two
 When a client wishes to join a signature domain, it must either join an
 existing one or create a new one. When creating, the server chooses a random
 number to address that domain. When no more clients exist for a domain, it is
-forgotten. 
+forgotten.
 
 Protocol Overview
 -----------------
