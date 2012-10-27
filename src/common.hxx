@@ -46,21 +46,4 @@
 
 typedef unsigned char byte;
 
-template<typename Address>
-Address convertAddress(const asio::ip::address&) {
-  return Address::is_not_an_understood_address_type;
-}
-
-template<>
-asio::ip::address_v4
-convertAddress<asio::ip::address_v4>(const asio::ip::address& addr) {
-  return addr.to_v4();
-}
-
-template<>
-asio::ip::address_v6
-convertAddress<asio::ip::address_v6>(const asio::ip::address& addr) {
-  return addr.to_v6();
-}
-
 #endif /* COMMON_HXX_ */
