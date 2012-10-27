@@ -26,7 +26,7 @@
 #define TIMESTAMP_VARIANCE 15
 #endif
 /** The time in seconds after which an idle connection is considered gone. */
-#ifndet CONNECTION_TIMEOUT
+#ifndef CONNECTION_TIMEOUT
 #define CONNECTION_TIMEOUT 300
 #endif
 /** The maximum length, in bytes, of a client advertisement. */
