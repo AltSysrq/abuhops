@@ -146,10 +146,10 @@ Format:
 Requests that the server produce a signature for this client within the given
 domain. A domain of 0 indicates that a new domain should be created.
 
-0xFF --- BYE
+0x06 --- BYE
 ^^^^^^^^^^^^
 Format:
-  0x05
+  0x06
 
 Indicates that the client will be sending no more packets, so the server may
 immediately free all information on that client.
