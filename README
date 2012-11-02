@@ -103,10 +103,12 @@ invalid, the server must take no action.
 ^^^^^^^^^^^^^
 Format:
   0x01
+  byte          who-am-i
 
 The PING packet is sent by the client at random intervals between 15 and 30
 seconds when there is nothing else to send, to keep a UDP hole punched through
-the firewall/NAT.
+the firewall/NAT. If who-am-i is non-zero, the client does not yet know its
+Internet address/port combination, and wishes to be informed of it.
 
 0x02 --- PROXY
 ^^^^^^^^^^^^^^
