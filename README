@@ -73,7 +73,7 @@ individual packets will not break the protocol.
 Every packet in either direction begins with a single byte indicating that
 packet's meaning. The rest of the packet's format is determined by the type.
 
-The protocol typically uses UDP port 12545.
+The protocol typically uses UDP port 12545 for IPv4 and 12546 for IPv6.
 
 Client-Server Protocol
 ----------------------
