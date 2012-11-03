@@ -37,7 +37,14 @@
 #ifndef RANDOM_SOURCE
 #define RANDOM_SOURCE "/dev/urandom"
 #endif
-
+/**
+ * The maximum number of simultaneous clients may exist from any one IP
+ * address. If this number is exceded, some clients from such an IP address are
+ * forgotten. This prevents remote memory exhaustion attacks.
+ */
+#ifndef MAX_CLIENTS_FROM_ONE_IP_ADDRESS
+#define MAX_CLIENTS_FROM_ONE_IP_ADDRESS 8
+#endif
 
 
 #define ELGAMAL_BASE "2"

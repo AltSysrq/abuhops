@@ -43,6 +43,16 @@ public:
   bool isOnline() const;
 
   /**
+   * Immediately marks this client as not online.
+   */
+  void kill();
+
+  /**
+   * Returns the endpoint of this client.
+   */
+  const asio::ip::udp::endpoint& getEndpoint() const;
+
+  /**
    * Maps message numbers to Client functions.
    *
    * Each function takes an array of data, where byte zero is the first byte

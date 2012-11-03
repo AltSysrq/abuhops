@@ -53,6 +53,14 @@ bool Client::isOnline() const {
   return online && time(NULL) < lastContact + CONNECTION_TIMEOUT;
 }
 
+void Client::kill() {
+  online = false;
+}
+
+const asio::ip::udp::endpoint& Client::getEndpoint() const {
+  return endpoint;
+}
+
 void (Client::*const Client::messages[256])(const byte*, unsigned) = {
   &Client::connect,
   &Client::ping,
