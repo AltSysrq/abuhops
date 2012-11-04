@@ -22,11 +22,15 @@ typedef map<asio::ip::udp::endpoint,Client*> clientelle_t;
 static clientelle_t clientelle;
 
 Client* getClientForEndpoint(const Realm* realm,
-                             const asio::ip::udp::endpoint& ep) {
+                             const asio::ip::udp::endpoint& ep,
+                             bool createIfNotExist) {
   //See if it already exists
   clientelle_t::iterator it = clientelle.find(ep);
   if (it != clientelle.end())
     return it->second;
+
+  if (!createIfNotExist)
+    return NULL;
 
   //Not yet existing, create a new one.
   //First, check IP address limit
