@@ -10,7 +10,10 @@
 
 #include "common.hxx"
 #include "auth.hxx"
+#include "service.hxx"
+#include "realm.hxx"
 #include "client.hxx"
+#include "packets.hxx"
 
 using namespace std;
 
@@ -75,6 +78,7 @@ void (Client::*const Client::messages[256])(const byte*, unsigned) = {
 };
 
 #define READ(type,from) (*(reinterpret_cast<const type*>(from)))
+#define WRITE(type,to) (*(reinterpret_cast<type*>(to)))
 
 void Client::connect(const byte* dat, unsigned len) {
   contact();
@@ -109,8 +113,23 @@ void Client::connect(const byte* dat, unsigned len) {
 
 void Client::ping(const byte* dat, unsigned len) {
   contact();
-  //TODO
+
+  if (len == 1 && dat[0]) {
+    //Client needs to know its external address/port
+    vector<byte> response(1 + realm->addressSize + 2);
+    response[0] = PAK_YOUARE;
+
+    realm->encodeAddress(&response[1], endpoint.address());
+    WRITE(unsigned short, &response[response.size()-2]) = endpoint.port();
+
+    sendPacket(endpoint, &response[0], response.size());
+  } else {
+    //Just respond for the sake of two-way traffic
+    byte response = PAK_PONG;
+    sendPacket(endpoint, &response, 1);
+  }
 }
+
 void Client::proxy(const byte* dat, unsigned len) {
   contact();
   //TODO
