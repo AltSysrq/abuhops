@@ -12,10 +12,10 @@
 using namespace std;
 
 static const asio::ip::address_v4 nativeIpv4Address(
-  asio::ip::address_v4::from_string("00.01.02.03"));
+  asio::ip::address_v4::from_string("1.2.3.4"));
 static const asio::ip::address_v6 nativeIpv6Address(
   asio::ip::address_v6::from_string(
-    "0100:0302:0504:0706:0908:0B0A:0D0C:0F0E"));
+    "0201:0403:0605:0807:0A09:0C0B:0E0D:100F"));
 
 template<unsigned Len, typename T>
 const byte* getAddressEncoding(const T& t) {
@@ -23,8 +23,8 @@ const byte* getAddressEncoding(const T& t) {
   const byte* raw = reinterpret_cast<const byte*>(&t[0]);
   bool isNativeCorrect = true;
   for (unsigned i = 0; i < Len; ++i) {
-    data[raw[i]] = i;
-    isNativeCorrect &= (raw[i] == i);
+    data[raw[i]-1] = i;
+    isNativeCorrect &= (raw[i] == i+1);
   }
 
   return isNativeCorrect? NULL : data;
