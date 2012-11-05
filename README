@@ -83,8 +83,8 @@ Format:
   0x00
   int32         client identifier
   int32         timestamp
-  ntbs          client name
   hmac          authentication
+  ntbs          client name
 
 The CONNECT packet requests that the server track the sender. The HMAC is
 determined using a shared secret with the authentication service, using as
