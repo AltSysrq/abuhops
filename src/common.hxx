@@ -13,9 +13,13 @@
 #define SHARED_SECRET_FILE "/usr/local/etc/abuhops/shared_secret"
 #endif
 
-/** The port number the server listens on */
-#ifndef PORT
-#define PORT 12545
+/** The port number the server listens on for IPv4 */
+#ifndef IPV4PORT
+#define IPV4PORT 12545
+#endif
+/** The port number the server listens on for IPv6 */
+#ifndef IPV6PORT
+#define IPV6PORT 12546
 #endif
 
 /** The maximum number of seconds in the past or future a timestamp is allowed
