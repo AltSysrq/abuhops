@@ -6,8 +6,10 @@
 
 #include <ctime>
 #include <cstring>
+#include <vector>
 
 #include "common.hxx"
+#include "auth.hxx"
 #include "client.hxx"
 
 using namespace std;
@@ -72,10 +74,39 @@ void (Client::*const Client::messages[256])(const byte*, unsigned) = {
   //NULLs to end of array are implicit
 };
 
+#define READ(type,from) (*(reinterpret_cast<const type*>(from)))
+
 void Client::connect(const byte* dat, unsigned len) {
   contact();
-  //TODO
+
+  //Check length sanity
+  if (len < 2*4 + HMAC_SIZE + 2 ||
+      len > 2*4 + HMAC_SIZE + MAX_CLIENT_NAME_LENGTH + 1)
+    return;
+
+  //Ensure NUL-terminated
+  if (dat[len]) return;
+
+  unsigned id = READ(unsigned, dat);
+  unsigned timestamp = READ(unsigned, dat+4);
+  byte hmac[HMAC_SIZE];
+  memcpy(hmac, dat+8, HMAC_SIZE);
+
+  const char* name = (const char*)(dat+8+HMAC_SIZE);
+  if (!*name) return; //Empty name
+
+  if (authenticate(realm, id, timestamp, name, hmac)) {
+    online = true;
+
+    this->id = id;
+    this->name = name;
+
+    //Send response
+    byte dontKnowWhoIAm = 1;
+    ping(&dontKnowWhoIAm, 1);
+  }
 }
+
 void Client::ping(const byte* dat, unsigned len) {
   contact();
   //TODO

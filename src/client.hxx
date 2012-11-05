@@ -4,6 +4,7 @@
 #include <asio.hpp>
 
 #include <ctime>
+#include <string>
 
 #include "common.hxx"
 
@@ -18,6 +19,8 @@ class Client {
   asio::ip::udp::endpoint endpoint;
   bool online;
   std::time_t lastContact;
+  std::string name;
+  unsigned id;
 
 public:
   /// Constructs a Client which is not online, and whose other fields are

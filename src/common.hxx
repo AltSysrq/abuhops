@@ -50,6 +50,10 @@
 #define MAX_CLIENTS_FROM_ONE_IP_ADDRESS 8
 #endif
 
+/** The maximum length of a client name. */
+#ifndef MAX_CLIENT_NAME_LENGTH
+#define MAX_CLIENT_NAME_LENGTH 32
+#endif /* MAX_CLIENT_NAME_LENGTH */
 
 #define ELGAMAL_BASE "2"
 #define ELGAMAL_MODULUS "444291e51b3ea5fd16673e95674b01e7b"
