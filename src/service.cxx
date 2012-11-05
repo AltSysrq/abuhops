@@ -12,6 +12,7 @@
 
 #include "common.hxx"
 #include "service.hxx"
+#include "dispatch.hxx"
 
 using namespace std;
 
@@ -82,7 +83,7 @@ static void receivePacket(const asio::error_code& error,
     lastMaintRun = now;
   }
 
-  //TODO: Handle the packet
+  dispatchPacket(readEndpoint, readBuffer, size);
 
   beginRead(readEndpoint.address().is_v4()? sock4 : sock6);
 }
