@@ -40,8 +40,7 @@ bool initService() {
   try {
     sock4 = new asio::ip::udp::socket(service,
                                       asio::ip::udp::endpoint(
-                                        asio::ip::address(
-                                          asio::ip::address_v4::any()),
+                                        asio::ip::udp::v4(),
                                         IPV4PORT));
   } catch (const asio::system_error& err) {
     cerr << "Unable to listen for IPv4: " << err.what() << endl;
@@ -50,8 +49,7 @@ bool initService() {
   try {
     sock6 = new asio::ip::udp::socket(service,
                                       asio::ip::udp::endpoint(
-                                        asio::ip::address(
-                                          asio::ip::address_v6::any()),
+                                        asio::ip::udp::v6(),
                                         IPV6PORT));
   } catch (const asio::system_error& err) {
     cerr << "Unable to listen for IPv6: " << err.what() << endl;
@@ -68,6 +66,7 @@ static void receivePacket(const asio::error_code& error,
                           size_t size) {
   if (error) {
     cerr << "Error receiving packet: " << error.message();
+    beginRead(readEndpoint.address().is_v4()? sock4 : sock6);
     return;
   }
 
