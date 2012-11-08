@@ -72,3 +72,12 @@ proc connect {id name} {
   udp-xmit "\x00$idb$nowb$hmac$name\x00"
   sleep 5000
 }
+
+proc connect-invalid {id name} {
+  set now [expr {[clock seconds] & 0xFFFFFFFF}]
+  set idb [binary format i $id]
+  set nowb [binary format i $now]
+  set hmac [::sha2::hmac -bin -key "foo" "$idb$nowb$name"]
+  udp-xmit "\x00$idb$nowb$hmac$name\x00"
+  sleep 5000
+}
