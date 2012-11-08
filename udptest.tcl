@@ -81,3 +81,9 @@ proc connect-invalid {id name} {
   udp-xmit "\x00$idb$nowb$hmac$name\x00"
   sleep 5000
 }
+
+proc ping {whoAmI} {
+  set wai [binary format c $whoAmI]
+  udp-xmit "\x01$wai"
+  sleep 5000
+}
