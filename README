@@ -163,7 +163,7 @@ Server-Client Protocol
 Format:
   0x00
   address       client address
-  port          client port
+  int16         client port
 
 Informs the client about its address and port as seen from the Internet.
 
