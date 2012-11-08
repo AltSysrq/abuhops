@@ -146,9 +146,11 @@ void Client::sign(const byte* dat, unsigned len) {
   contact();
   //TODO
 }
+
 void Client::bye(const byte* dat, unsigned len) {
   contact();
-  //TODO
+
+  online = false;
 }
 
 void Client::contact() {
