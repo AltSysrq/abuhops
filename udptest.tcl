@@ -87,3 +87,8 @@ proc ping {whoAmI} {
   udp-xmit "\x01$wai"
   sleep 5000
 }
+
+proc bye {} {
+  udp-xmit "\xFF"
+  sleep 5000
+}
