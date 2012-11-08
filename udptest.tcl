@@ -32,9 +32,10 @@ proc udp-recv {} {
   set data [read $::SOCK]
 
   binary scan $data c type
+  set type [format %02X $type]
   set data [string range $data 1 end]
   if {![dict exists $::FORMATS $type]} {
-    set name UNKNOWN
+    set name UNKNOWN:$type
     set fmt {}
   } else {
     set fmt [lassign [dict get $::FORMATS $type] name]
