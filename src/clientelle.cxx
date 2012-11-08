@@ -65,6 +65,8 @@ void cleanClientMaps() {
       asio::ip::address key(it->first);
       connectedAddresses.erase(it);
       it = connectedAddresses.lower_bound(key);
+      //We can't increment it if it is the end
+      if (it == connectedAddresses.end()) break;
     }
   }
 
@@ -76,6 +78,8 @@ void cleanClientMaps() {
       clientelle.erase(it);
       it = clientelle.lower_bound(c->getEndpoint());
       delete c;
+      //We can't increment it if it is the end
+      if (it == clientelle.end()) break;
     }
   }
 }
