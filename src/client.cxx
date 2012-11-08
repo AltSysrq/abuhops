@@ -89,7 +89,7 @@ void Client::connect(const byte* dat, unsigned len) {
     return;
 
   //Ensure NUL-terminated
-  if (dat[len]) return;
+  if (dat[len-1]) return;
 
   unsigned id = READ(unsigned, dat);
   unsigned timestamp = READ(unsigned, dat+4);
