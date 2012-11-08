@@ -1,12 +1,18 @@
 #! /usr/bin/env tclsh
 package require Tcl 8.5
 package require sha256
+package require udp
 
 # Semi-generic program for testing abuhops.
 
 set LOCALPORT [expr {0+0xABCD}]
-set SERVER localhost
+set SERVER 127.0.0.1
 set SERVERPORT 12545
+
+set SOCK [udp_open $LOCALPORT]
+fconfigure $SOCK -buffering none -translation binary
+fileevent $SOCK readable udp-recv
+udp_conf $SOCK $SERVER $SERVERPORT
 
 set FORMATS {
   00 { YOU-ARE address 4 port 2 }
@@ -19,22 +25,11 @@ set FORMATS {
 proc udp-xmit {data} {
   binary scan $data H* hex
   puts "Xmit: $hex"
-  catch {
-    exec -ignorestderr \
-        << $data nc -w 1 -p $::LOCALPORT -u $::SERVER $::SERVERPORT
-  }
+  puts -nonewline $::SOCK $data
 }
 
 proc udp-recv {} {
-  if {[catch {
-    puts begin
-    set data [exec -ignorestderr -keepnewline \
-                  << {} nc -u -l -w 5 -p $::LOCALPORT]
-    puts done
-  }]} {
-    puts "No response."
-    return no
-  }
+  set data [read $::SOCK]
 
   binary scan $data c type
   set data [string range $data 1 end]
@@ -61,6 +56,12 @@ set f [open "test_secret" rb]
 set SHARED_SECRET [read $f]
 close $f
 
+proc sleep {delay} {
+  set ::sleepDone no
+  after $delay [list set ::sleepDone yes]
+  vwait ::sleepDone
+}
+
 proc connect {id name} {
   set now [expr {[clock seconds] & 0xFFFFFFFF}]
   set idb [binary format i $id]
@@ -68,5 +69,5 @@ proc connect {id name} {
   set hmac [::sha2::hmac -bin -key $::SHARED_SECRET \
                 "$idb$nowb$name"]
   udp-xmit "\x00$idb$nowb$hmac$name\x00"
-  udp-recv
+  sleep 5000
 }
