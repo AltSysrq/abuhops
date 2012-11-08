@@ -89,6 +89,6 @@ proc ping {whoAmI} {
 }
 
 proc bye {} {
-  udp-xmit "\xFF"
+  udp-xmit "\x06"
   sleep 5000
 }
