@@ -137,6 +137,7 @@ void Client::list(const byte* dat, unsigned len) {
   if (isIteratingAdverts) return;
 
   isIteratingAdverts = true;
+  advertIterator.reset();
   setIterationTimer();
 }
 void Client::sign(const byte* dat, unsigned len) {
@@ -179,11 +180,12 @@ void Client::timerHandler_static(Client* c, const asio::error_code& code) {
 
 void Client::timerHandler(const asio::error_code&) {
   asio::ip::udp::endpoint from;
-  vector<byte> pack(1 + realm->addressSize + 2);
+  vector<byte> pack(1 + 4 + realm->addressSize + 2);
   if (advertIterator.next(from, pack)) {
     pack[0] = PAK_ADVERT;
-    realm->encodeAddress(&pack[1], from.address());
-    WRITE(unsigned short, &pack[1+realm->addressSize]) = from.port();
+    WRITE(unsigned, &pack[1]) = id;
+    realm->encodeAddress(&pack[1+4], from.address());
+    WRITE(unsigned short, &pack[1+4+realm->addressSize]) = from.port();
     sendPacket(endpoint, &pack[0], pack.size());
     setIterationTimer();
   } else {
