@@ -58,7 +58,7 @@ bool Advert::iterator::next(asio::ip::udp::endpoint& ep, vector<byte>& dst) {
   map<asio::ip::udp::endpoint,Advert*>::const_iterator it =
     beginning? adverts[realm].begin() : adverts[realm].lower_bound(prev);
   //Move past the key (we got this last time)
-  if (beginning && it != adverts[realm].end())
+  if (!beginning && it != adverts[realm].end())
     ++it;
   beginning = false;
 
