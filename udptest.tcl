@@ -93,6 +93,11 @@ proc post {data} {
   sleep 1000
 }
 
+proc lst {} {
+  udp-xmit "\x04"
+  sleep 5000
+}
+
 proc bye {} {
   udp-xmit "\x06"
   sleep 5000
