@@ -118,10 +118,16 @@ void Client::proxy(const byte* dat, unsigned len) {
   contact();
   //TODO
 }
+
 void Client::post(const byte* dat, unsigned len) {
   contact();
-  //TODO
+
+  if (len > MAX_ADVERTISEMENT_SIZE)
+    return;
+
+  advert.setData(dat, len);
 }
+
 void Client::list(const byte* dat, unsigned len) {
   contact();
   //TODO
