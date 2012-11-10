@@ -40,20 +40,31 @@ const byte* implGetBytesFromAddress(const asio::ip::address& addr) {
   return reinterpret_cast<const byte*>(&t[0]);
 }
 
+template<typename T>
+asio::ip::address implGetAddressFromBytes(const byte* dat) {
+  typename T::bytes_type d;
+  memcpy(&d[0], dat, sizeof(d));
+  return asio::ip::address(T(d));
+}
+
 const Realm Realm::v4(4,
                       getAddressEncoding<4>(
                         nativeIpv4Address.to_bytes()),
                       implGetBytesFromAddress<asio::ip::address_v4,
-                                              &asio::ip::address::to_v4>);
+                                              &asio::ip::address::to_v4>,
+                      implGetAddressFromBytes<asio::ip::address_v4>);
 const Realm Realm::v6(16,
                       getAddressEncoding<16>(
                         nativeIpv6Address.to_bytes()),
                       implGetBytesFromAddress<asio::ip::address_v6,
-                                              &asio::ip::address::to_v6>);
+                                              &asio::ip::address::to_v6>,
+                      implGetAddressFromBytes<asio::ip::address_v6>);
 
 Realm::Realm(unsigned l, const byte* enc,
-             const byte* (*gbfa)(const asio::ip::address&))
+             const byte* (*gbfa)(const asio::ip::address&),
+             asio::ip::address (*gafb)(const byte*))
 : getBytesFromAddress(gbfa),
+  getAddressFromBytes(gafb),
   addressSize(l), addressEncoding(enc)
 { }
 
@@ -67,11 +78,13 @@ void Realm::encodeAddress(byte* dst, const asio::ip::address& addr) const {
 }
 
 void Realm::decodeAddress(asio::ip::address& addr, const byte* src) const {
-  byte* dst = const_cast<byte*>(getBytesFromAddress(addr));
+  byte dst[16];
   if (addressEncoding)
     for (unsigned i = 0; i < addressSize; ++i)
       dst[i] = src[addressEncoding[i]];
   else
     memcpy(dst, src, addressSize);
+
+  addr = getAddressFromBytes(dst);
 }
 

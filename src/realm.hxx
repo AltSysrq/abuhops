@@ -14,9 +14,11 @@
  */
 class Realm {
   Realm(unsigned, const byte*,
-        const byte* (*)(const asio::ip::address&));
+        const byte* (*)(const asio::ip::address&),
+        asio::ip::address (*)(const byte*));
 
   const byte* (*const getBytesFromAddress)(const asio::ip::address&);
+  asio::ip::address (*const getAddressFromBytes)(const byte*);
 
 public:
   const unsigned addressSize;
