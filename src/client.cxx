@@ -13,6 +13,7 @@
 #include "auth.hxx"
 #include "service.hxx"
 #include "realm.hxx"
+#include "clientelle.hxx"
 #include "client.hxx"
 #include "packets.hxx"
 
@@ -119,7 +120,23 @@ void Client::ping(const byte* dat, unsigned len) {
 
 void Client::proxy(const byte* dat, unsigned len) {
   contact();
-  //TODO
+
+  if (len > MAX_PROXY_SIZE + realm->addressSize + 2) return;
+  if (len < 1 + realm->addressSize + 2) return;
+
+  asio::ip::address addr;
+  unsigned short port;
+  realm->decodeAddress(addr, dat);
+  port = READ(unsigned short, dat+realm->addressSize);
+
+  //OK, send the packet if there is a client on that endpoint
+  asio::ip::udp::endpoint ep(addr, port);
+  if (getClientForEndpoint(realm, ep, false)) {
+    byte pack[1+MAX_PROXY_SIZE];
+    pack[0] = PAK_FROMOTHER;
+    memcpy(&pack[1], dat + realm->addressSize + 2, len-realm->addressSize-2);
+    sendPacket(ep, pack, 1 + len-realm->addressSize-2);
+  }
 }
 
 void Client::post(const byte* dat, unsigned len) {

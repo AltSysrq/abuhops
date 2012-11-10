@@ -37,6 +37,10 @@
 #ifndef MAX_ADVERTISEMENT_SIZE
 #define MAX_ADVERTISEMENT_SIZE 128
 #endif
+/** The maximum length, in bytes, of any proxy packet. */
+#ifndef MAX_PROXY_SIZE
+#define MAX_PROXY_SIZE 196
+#endif
 /** Read random data from this file */
 #ifndef RANDOM_SOURCE
 #define RANDOM_SOURCE "/dev/urandom"
