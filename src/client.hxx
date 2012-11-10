@@ -6,6 +6,7 @@
 #include <ctime>
 #include <string>
 
+#include "advert.hxx"
 #include "common.hxx"
 
 class Realm;
@@ -22,21 +23,16 @@ class Client {
   std::string name;
   unsigned id;
 
+  Advert advert;
+  Advert::iterator advertIterator;
+  bool isIteratingAdverts;
+
 public:
-  /// Constructs a Client which is not online, and whose other fields are
-  /// undefined.
-  Client();
   /// Constructs a Client in the given Realm and with the given endpoint. It is
   /// NOT considered online.
   Client(const Realm*, const asio::ip::udp::endpoint&);
   /// Copy constructor
   Client(const Client&);
-  /// Assignment
-  Client& operator=(const Client&);
-  /// Comparator
-  bool operator<(const Client&) const;
-  /// Equality
-  bool operator==(const Client&) const;
 
   /**
    * Returns whether this Client is considered "online". A client is online if:

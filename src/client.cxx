@@ -17,42 +17,26 @@
 
 using namespace std;
 
-Client::Client()
-: online(false)
-{ }
-
 Client::Client(const Realm* realm_,
                const asio::ip::udp::endpoint& ep)
 : realm(realm_),
   endpoint(ep),
   online(false),
-  lastContact(time(NULL))
+  lastContact(time(NULL)),
+  advert(realm, endpoint),
+  advertIterator(realm),
+  isIteratingAdverts(false)
 { }
 
 Client::Client(const Client& that)
 : realm(that.realm),
   endpoint(that.endpoint),
   online(that.online),
-  lastContact(that.lastContact)
+  lastContact(that.lastContact),
+  advert(that.advert),
+  advertIterator(that.advertIterator),
+  isIteratingAdverts(that.isIteratingAdverts)
 { }
-
-Client& Client::operator=(const Client& that) {
-  realm = that.realm;
-  endpoint = that.endpoint;
-  online = that.online;
-  lastContact = that.lastContact;
-  return *this;
-}
-
-bool Client::operator<(const Client& that) const {
-  return (this->realm < that.realm) ||
-    (this->realm == that.realm && this->endpoint < that.endpoint);
-}
-
-bool Client::operator==(const Client& that) const {
-  return this->realm == that.realm &&
-         this->endpoint == that.endpoint;
-}
 
 bool Client::isOnline() const {
   return online && time(NULL) < lastContact + CONNECTION_TIMEOUT;
