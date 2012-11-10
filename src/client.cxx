@@ -181,7 +181,7 @@ void Client::timerHandler(const asio::error_code&) {
   asio::ip::udp::endpoint from;
   vector<byte> pack(1 + realm->addressSize + 2);
   if (advertIterator.next(from, pack)) {
-    pack[0] = PAK_FROMOTHER;
+    pack[0] = PAK_ADVERT;
     realm->encodeAddress(&pack[1], from.address());
     WRITE(unsigned short, &pack[1+realm->addressSize]) = from.port();
     sendPacket(endpoint, &pack[0], pack.size());
