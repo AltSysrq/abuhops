@@ -6,6 +6,11 @@
 #include "common.hxx"
 
 /**
+ * The io_service used for the server.
+ */
+extern asio::io_service service;
+
+/**
  * Causes the given function to be called periodically (at most once per
  * second).
  *

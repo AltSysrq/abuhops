@@ -18,7 +18,7 @@ using namespace std;
 
 static list<void (*)(void)> maintFuncs;
 
-static asio::io_service service;
+asio::io_service service;
 static asio::ip::udp::socket* sock4 = NULL, * sock6 = NULL;
 
 void addMaintFunc(void (*f)(void)) {
