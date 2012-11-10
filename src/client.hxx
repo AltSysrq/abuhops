@@ -26,6 +26,7 @@ class Client {
   Advert advert;
   Advert::iterator advertIterator;
   bool isIteratingAdverts;
+  asio::deadline_timer advertIterationTimer;
 
 public:
   /// Constructs a Client in the given Realm and with the given endpoint. It is
@@ -73,6 +74,9 @@ private:
   void bye         (const byte*, unsigned);
 
   void contact();
+  void setIterationTimer();
+  static void timerHandler_static(Client*, const asio::error_code&);
+  void timerHandler(const asio::error_code&);
 };
 
 #endif /* CLIENT_HXX_ */

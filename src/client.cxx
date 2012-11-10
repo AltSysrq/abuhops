@@ -7,6 +7,7 @@
 #include <ctime>
 #include <cstring>
 #include <vector>
+#include <functional>
 
 #include "common.hxx"
 #include "auth.hxx"
@@ -25,7 +26,8 @@ Client::Client(const Realm* realm_,
   lastContact(time(NULL)),
   advert(realm, endpoint),
   advertIterator(realm),
-  isIteratingAdverts(false)
+  isIteratingAdverts(false),
+  advertIterationTimer(service)
 { }
 
 Client::Client(const Client& that)
@@ -35,7 +37,8 @@ Client::Client(const Client& that)
   lastContact(that.lastContact),
   advert(that.advert),
   advertIterator(that.advertIterator),
-  isIteratingAdverts(that.isIteratingAdverts)
+  isIteratingAdverts(that.isIteratingAdverts),
+  advertIterationTimer(service)
 { }
 
 bool Client::isOnline() const {
@@ -130,7 +133,11 @@ void Client::post(const byte* dat, unsigned len) {
 
 void Client::list(const byte* dat, unsigned len) {
   contact();
-  //TODO
+
+  if (isIteratingAdverts) return;
+
+  isIteratingAdverts = true;
+  setIterationTimer();
 }
 void Client::sign(const byte* dat, unsigned len) {
   contact();
@@ -145,4 +152,40 @@ void Client::bye(const byte* dat, unsigned len) {
 
 void Client::contact() {
   lastContact = time(NULL);
+}
+
+//G++'s bind1st seems to be broken, as it tries to overload its operator() in a
+//forbidden manner.
+struct ClientTHBind1st {
+  Client* that;
+  void (*f)(Client*, const asio::error_code&);
+
+  void operator()(const asio::error_code& code) {
+    f(that, code);
+  }
+};
+
+void Client::setIterationTimer() {
+  advertIterationTimer.expires_from_now(boost::posix_time::milliseconds(512));
+  ClientTHBind1st f;
+  f.that = this;
+  f.f = &Client::timerHandler_static;
+  advertIterationTimer.async_wait(f);
+}
+
+void Client::timerHandler_static(Client* c, const asio::error_code& code) {
+  c->timerHandler(code);
+}
+
+void Client::timerHandler(const asio::error_code&) {
+  asio::ip::udp::endpoint from;
+  vector<byte> pack(1 + realm->addressSize + 2);
+  if (advertIterator.next(from, pack)) {
+    pack[0] = PAK_FROMOTHER;
+    realm->encodeAddress(&pack[1], from.address());
+    WRITE(unsigned short, &pack[1+realm->addressSize]) = from.port();
+    setIterationTimer();
+  } else {
+    isIteratingAdverts = false;
+  }
 }
