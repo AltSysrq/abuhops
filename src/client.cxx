@@ -184,6 +184,7 @@ void Client::timerHandler(const asio::error_code&) {
     pack[0] = PAK_FROMOTHER;
     realm->encodeAddress(&pack[1], from.address());
     WRITE(unsigned short, &pack[1+realm->addressSize]) = from.port();
+    sendPacket(endpoint, &pack[0], pack.size());
     setIterationTimer();
   } else {
     isIteratingAdverts = false;
