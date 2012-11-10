@@ -98,6 +98,11 @@ proc lst {} {
   sleep 5000
 }
 
+proc proxy {addr port payload} {
+  udp-xmit "\x02[binary format H* $addr$port$payload]"
+  sleep 1000
+}
+
 proc bye {} {
   udp-xmit "\x06"
   sleep 5000
