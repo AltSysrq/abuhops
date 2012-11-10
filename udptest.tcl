@@ -88,6 +88,11 @@ proc ping {whoAmI} {
   sleep 5000
 }
 
+proc post {data} {
+  udp-xmit "\x03[binary format H* $data]"
+  sleep 1000
+}
+
 proc bye {} {
   udp-xmit "\x06"
   sleep 5000
