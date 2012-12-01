@@ -189,9 +189,6 @@ the application must include it in the payload.
 ^^^^^^^^^^^^^^^
 Format:
   0x03
-  int32         client number
-  address       client address
-  int16         client port
   ...           payload
 
 Informs the client of another client which has posted an advertisement for
