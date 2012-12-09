@@ -21,6 +21,13 @@
 
 using namespace std;
 
+#ifdef CLIENT_DEBUG
+#include <iostream>
+#define debug(str) cerr << str << endl
+#else
+#define debug(str)
+#endif
+
 typedef CryptoPP::HMAC<CryptoPP::SHA256> Hmac;
 
 class HmacCkecker {
@@ -71,6 +78,7 @@ bool authenticate(const Realm* realm,
   unsigned now = truncatedTime();
   if (timestamp > now || timestamp < now-TIMESTAMP_VARIANCE)
     return false;
+  debug("Auth timestamp OK");
 
   //Ensure the timestamp/id pair does not exist
   pair<multimap<unsigned,unsigned>::iterator,
@@ -80,6 +88,8 @@ bool authenticate(const Realm* realm,
                             pair<const unsigned,unsigned>(timestamp,id)))
     //Already seen
     return false;
+
+  debug("Auth timestamp non-dupe");
 
   vector<byte> data(2*4 + strlen(name));
   memcpy(&data[0], &id, 4);
@@ -91,9 +101,11 @@ bool authenticate(const Realm* realm,
   if (checkHmac(&data[0], data.size(), hmac)) {
     //OK
     recentTimestamps[realm].insert(make_pair(timestamp,id));
+    debug("HMAC OK");
     return true;
   } else {
     //Invalid HMAC
+    debug("HMAC Invalid");
     return false;
   }
 }
