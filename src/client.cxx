@@ -19,6 +19,13 @@
 
 using namespace std;
 
+#ifdef CLIENT_DEBUG
+#include <iostream>
+#define debug(str) cerr << str << endl
+#else
+#define debug(str)
+#endif
+
 Client::Client(const Realm* realm_,
                const asio::ip::udp::endpoint& ep)
 : realm(realm_),
@@ -71,13 +78,19 @@ void (Client::*const Client::messages[256])(const byte*, unsigned) = {
 void Client::connect(const byte* dat, unsigned len) {
   contact();
 
+  debug(">> CONNECT");
+
   //Check length sanity
   if (len < 2*4 + HMAC_SIZE + 2 ||
       len > 2*4 + HMAC_SIZE + MAX_CLIENT_NAME_LENGTH + 1)
     return;
 
+  debug("Length OK");
+
   //Ensure NUL-terminated
   if (dat[len-1]) return;
+
+  debug("NUL OK");
 
   unsigned id = READ(unsigned, dat);
   unsigned timestamp = READ(unsigned, dat+4);
@@ -87,7 +100,10 @@ void Client::connect(const byte* dat, unsigned len) {
   const char* name = (const char*)(dat+8+HMAC_SIZE);
   if (!*name) return; //Empty name
 
+  debug("Name OK");
+
   if (authenticate(realm, id, timestamp, name, hmac)) {
+    debug("Auth OK");
     online = true;
 
     this->id = id;
